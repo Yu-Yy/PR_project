@@ -42,7 +42,7 @@ else:
         if num_class == 2 or num_class == 3:
             Training_set_samples[label] = dic_Text[label]
         else:
-            idx_s = math.floor(num_class*0.7)
+            idx_s = math.floor(num_class*0.7)  # It is perfect for the triplit loss design
             Training_set_samples[label] = dic_Text[label][:idx_s]
             Test_set_samples[label] = dic_Text[label][idx_s:]
     train_class_spe = 'train_divide_mini100_eq.pkl'

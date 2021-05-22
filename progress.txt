@@ -1,0 +1,10 @@
+Mini_dataset: including 500 labels
+pca:   acc1: 0.5605  acc5: 0.5932
+pcaaug:  acc1: 0.5733 acc5: 0.5917
+
+
+text_pure:  acc: 0.8450 acc5: 0.9090
+nmf: acc: 0.6785 acc5: 0.8137
+pca:  acc: 0.7297 acc5: 0.8236
+
+DL：epoch 4 acc1: 0.4794, acc5: 0.5789
