@@ -6,7 +6,7 @@ BACKBONE_MODEL: 'pose_higher_hrnet' #'pose_resnet'
 MODEL: 'hrnet_adabins'
 DATA_DIR: ''
 GPUS:  '0,1'
-OUTPUT_DIR: 'result/orig_hrnet' 
+OUTPUT_DIR: 'result/fusing_tr' 
 LOG_DIR: 'log'
 WORKERS: 16
 PRINT_FREQ: 5
@@ -147,10 +147,10 @@ TRAIN:
   BATCH_SIZE: 5
   SHUFFLE: true
   BEGIN_EPOCH: 0
-  END_EPOCH: 50
+  END_EPOCH: 30
   RESUME: True
   OPTIMIZER: adam
-  LR: 0.0001
+  LR: 0.001
 
 TEST:
   MODEL_FILE: 'model_best.pth.tar' #'final_state.pth.tar' 
