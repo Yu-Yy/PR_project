@@ -24,7 +24,7 @@ You can download the model `result` [here](https://cloud.tsinghua.edu.cn/d/42a31
 
 | Method     | acc1     | acc5     |
 | ---------- | :-----------:  | :-----------: |
-| Text_pure     | 0.8492     | 0.9132     |
+| Text_pure     | 0.8492     | 0.9132     |gi
 | NMF     | 0.6785     | 0.8137     |
 | PCA     | 0.7297    | 0.8236     |
 | MLP     | 0.8848     | 0.9445     |
