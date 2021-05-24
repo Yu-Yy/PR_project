@@ -4,9 +4,6 @@
 ## Current Result
 Mini_dataset: including 500 labels
 
-## Model download
-You can download the model `result` [here](https://cloud.tsinghua.edu.cn/d/42a31128af9d401f8aa9/)
-
 ### image:
 - Result
 
@@ -35,3 +32,7 @@ You can download the model `result` [here](https://cloud.tsinghua.edu.cn/d/42a31
 | Method     | acc1     | acc5     |
 | ---------- | :-----------:  | :-----------: |
 | Transformer_Fusion     | 0.6714     | 0.8009     |
+
+
+## Model download
+You can download the model `result` [here](https://cloud.tsinghua.edu.cn/d/42a31128af9d401f8aa9/)
