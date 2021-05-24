@@ -4,30 +4,42 @@
 ## Current Result
 Mini_dataset: including 500 labels
 
+## Model download
+You can download the model `result` [here](https://cloud.tsinghua.edu.cn/d/42a31128af9d401f8aa9/)
+
 ### image:
-pca:   acc1: 0.5605  acc5: 0.5932
+- Result
 
-pcaaug:  acc1: 0.5733 acc5: 0.5917
-
-SIFT + KNN: acc1: 0.6587 acc5: 0.7460
-
-Naive DL：epoch 4 acc1: 0.4794, acc5: 0.5789
-
-          epoch 30 acc1: 0.6060 acc5: 0.6970
-
-Transformer DL: epoch 11 acc1 = 0.5761 acc2 = 0.6188
+| Method     | acc1     | acc5     |
+| ---------- | :-----------:  | :-----------: |
+| pca     | 0.5605     | 0.5932     |
+| ---------- | :-----------:  | :-----------: |
+| pca_aug     | 0.5733     | 0.5917     |
+| ---------- | :-----------:  | :-----------: |
+| SIFT+KNN     | 0.6587    | 0.7460     |
+| ---------- | :-----------:  | :-----------: |
+| HRnet_base     | 0.6060     | 0.6970     |
+| ---------- | :-----------:  | :-----------: |
+| HRnet+Transformer     | 0.5761     | 0.6188     |
 
 
 ### text:
-text_pure:  acc: 0.8492 acc5: 0.9132
+- Result
 
-nmf: acc: 0.6785 acc5: 0.8137
-
-pca:  acc: 0.7297 acc5: 0.8236
-
-mlp: acc1: 0.8848 acc5: 0.9445
-
-mlp + Transformer: acc1: 0.9090 acc5: 0.9630
+| Method     | acc1     | acc5     |
+| ---------- | :-----------:  | :-----------: |
+| Text_pure     | 0.8492     | 0.9132     |
+| ---------- | :-----------:  | :-----------: |
+| NMF     | 0.6785     | 0.8137     |
+| ---------- | :-----------:  | :-----------: |
+| PCA     | 0.7297    | 0.8236     |
+| ---------- | :-----------:  | :-----------: |
+| MLP     | 0.8848     | 0.9445     |
+| ---------- | :-----------:  | :-----------: |
+| MLP+Transformer     | 0.9090     | 0.9630     |
 
 ### text + image
-Transformer_Fusion: acc1: acc5: 
+
+| Method     | acc1     | acc5     |
+| ---------- | :-----------:  | :-----------: |
+| Transformer_Fusion     | 0.6714     | 0.8009     |
