@@ -9,6 +9,7 @@ Mini_dataset: including 500 labels
 
 | Method     | acc1     | acc5     |
 | ---------- | :-----------:  | :-----------: |
+| nmf     | 0.3698    | 0.4481     |
 | pca     | 0.5605     | 0.5932     |
 | pca_aug     | 0.5733     | 0.5917     |
 | SIFT+KNN     | 0.6587    | 0.7460     |
@@ -35,4 +36,4 @@ Mini_dataset: including 500 labels
 
 
 ## Model download
-You can download the model `result` [here](https://cloud.tsinghua.edu.cn/d/42a31128af9d401f8aa9/)
+You can download the model `result/` [here](https://cloud.tsinghua.edu.cn/d/42a31128af9d401f8aa9/)
