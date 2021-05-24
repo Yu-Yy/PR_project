@@ -22,8 +22,8 @@ class cross_modal(nn.Module):
         super(cross_modal,self).__init__()
         self.image_em = retrieval_net(cfg, is_train = is_train, is_transform = is_transform)
         self.text_em = text_simple_tf(original_dim,is_transform)
-        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 100, 512), nn.BatchNorm1d(512), nn.LeakyReLU())
-        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 100, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,512), nn.BatchNorm1d(512),nn.LeakyReLU())
+        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 100, 1024), nn.BatchNorm1d(1024), nn.LeakyReLU())
+        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 100, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,1024), nn.BatchNorm1d(1024),nn.LeakyReLU())
     def forward(self,image, text_feature):
         image_feature = self.image_em(image)
         text_embed = self.text_em(text_feature)

@@ -12,10 +12,11 @@ pcaaug:  acc1: 0.5733 acc5: 0.5917
 SIFT + KNN: acc1: 0.6587 acc5: 0.7460
 
 Naive DL：epoch 4 acc1: 0.4794, acc5: 0.5789
-
           epoch 30 acc1: 0.6060 acc5: 0.6970
+          epoch 50 acc1: 0.5946 acc5: 0.7055
 
-Transformer DL: epoch 11 acc1 = 0.5761 acc2 = 0.6188
+Transformer DL: epoch 11 acc1 = 0.5761 acc5 = 0.6188
+                epoch 30 acc1 = 0.5377 acc5 = 0.5647
 
 
 ### text:
@@ -30,4 +31,4 @@ mlp: acc1: 0.8848 acc5: 0.9445
 mlp + Transformer: acc1: 0.9090 acc5: 0.9630
 
 ### text + image
-Transformer_Fusion: acc1: acc5: 
+Transformer_Fusion: acc1: 0.6714 acc5: 0.8009 
