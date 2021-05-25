@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pickle
 import sklearn.decomposition as dc
+import visualize 
 
 is_pca = True
 is_nmf = False
@@ -48,10 +49,10 @@ labels_train = np.array(labels_train)
 trainned_base = dc_er.fit_transform(feas_train)
 
 # do the test
-test_loader = DataLoader(dataset = test_dataset,batch_size = 1,shuffle = True)
+test_loader = DataLoader(dataset = test_dataset,batch_size = 1,shuffle = False)
 acc5 = 0
 acc1 = 0
-
+results_text = {'pre':[],'GT':[]}
 for batch_data in tqdm(test_loader):
     text,label = batch_data
     #处理图像数据，提取SIFT特征
@@ -65,17 +66,30 @@ for batch_data in tqdm(test_loader):
     idx_sort = np.argsort(distance_s)
     idx_top5 = idx_sort[:5]
     pred_label = labels_train[idx_top5]
+    pred_label = np.flipud(pred_label) 
 
     if label[0] in pred_label: #TODO: text need to be further index
         acc5 = acc5 + 1
-    if label[0] == pred_label[0]:
+    if label[0] == pred_label[-1]:
         acc1 = acc1 + 1
+    results_text['pre'].append(pred_label)
+    results_text['GT'].append(label[0])
 
-# err_rate = err/len(test_dataset)
-# acc = 1-err_rate
+#save results
+savePath = './results/test_text_pure.pkl'
+with open(savePath,'wb') as dfile: #Save dic to loacl
+        pickle.dump(results_text,dfile)
+
+
+#output result
 acc_rate5 = acc5 / len(test_dataset)
 acc_rate1 = acc1 / len(test_dataset)
 print('----------------------------')
 
 print(f"acc1 = {acc_rate1:.4f}")
 print(f"acc5 = {acc_rate5:.4f}")
+
+#save confusion matrix
+cm = visualize.cal_confusion_matrix(results_text['pre'],results_text['GT'])
+visualize.plot_confusion_matrix(cm, range(cm.shape[0]), "text pure Confusion Matrix")
+plt.savefig('./text pure Confusion Matrix.jpg', format='jpg')

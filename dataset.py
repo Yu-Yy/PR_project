@@ -19,8 +19,9 @@ with open(BOG_file,'rb') as f:
 BOG_list = list(BOG)
 Text_dim = len(BOG_list)
 
-TEST = 'datasets/test_divide_mini_eq.pkl' 
-TRAIN = 'datasets/train_divide_mini_eq.pkl'
+TEST = 'datasets/test_divide_mini500_eq.pkl' 
+TRAIN = 'datasets/train_divide_mini500_eq.pkl'
+VAL = 'datasets/val_divide_mini500_eq.pkl'
 
 class mydataset_SIFT(Dataset):
     def __init__(self, image_dir,text_path,resize_height=640, resize_width=640,is_train = True):
@@ -44,7 +45,7 @@ class mydataset_SIFT(Dataset):
             self.dataset = TRAIN
         else:
             self.dataset = TEST
-        with open(self.dataset,'rb') as dfile:
+        with open(self.dataset,'rb') as dfile: #read dic
             raw_data = pickle.load(dfile)
         self.imgs = list()
         self.texts = list()
@@ -288,7 +289,60 @@ class Text_dataset(Dataset):
 
 
 
+class mydataset_ResNet(Dataset):
+    def __init__(self, image_dir,text_path,resize_height=256, resize_width=256,is_train = True):
+        '''
+        Input:  image_dir -图片路径(image_dir+imge_name.jpg构成图片的完整路径)
+                text_path - 文本数据的路径
+                resize_height -图像高，
+                resize_width  -图像宽    
+        '''
 
+        # #相关预处理的初始化
+        self.transforms=True
+        self.transform = transforms.Compose([            
+        transforms.Resize(256),                   
+        transforms.CenterCrop(224),               
+        transforms.ToTensor(),                   
+        transforms.Normalize(                      
+        mean=[0.485, 0.456, 0.406],                
+        std=[0.229, 0.224, 0.225]                
+        )])
+
+
+
+        self.image_dir = image_dir
+        if is_train:
+            self.dataset = TRAIN
+        else:
+            self.dataset = TEST
+        with open(self.dataset,'rb') as dfile: #read dic
+            raw_data = pickle.load(dfile)
+        self.imgs = list()
+        self.texts = list()
+        for l,v in raw_data.items():
+            self.imgs.extend(v)
+            self.texts.extend([l for _ in range(len(v))])
+       
+ 
+    def __getitem__(self, i):
+        #获取图像
+        img_path = os.path.join(self.image_dir,self.imgs[i][1])
+        pil_img = Image.open(img_path)
+        if self.transforms:
+            img_data =self.transform(pil_img)
+        else:
+            pil_img = np.asarray(pil_img)
+            img_data = torch.from_numpy(pil_img)
+        
+        #获取文本
+        text_data = self.texts[i]
+
+        #返回数据
+        return [img_data,text_data]
+ 
+    def __len__(self):
+        return len(self.imgs)
 
 
 
