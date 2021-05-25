@@ -115,9 +115,13 @@ def main():
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
     model, optimizer = get_optimizer(model)
 
-    if config.TRAIN.RESUME:
-        start_epoch, model, optimizer, metrics_load = load_checkpoint(model, optimizer, config.OUTPUT_DIR) # TODO: Load the A1 metrics
-        least_test_loss = metrics_load
+    best_model = torch.load(os.path.join(config.OUTPUT_DIR ,config.TEST.MODEL_FILE))
+
+    model.module.load_state_dict(best_model)
+
+    # if config.TRAIN.RESUME:
+    #     start_epoch, model, optimizer, metrics_load = load_checkpoint(model, optimizer, config.OUTPUT_DIR) # TODO: Load the A1 metrics
+    #     least_test_loss = metrics_load
 
     
     print('=> EVAL...')

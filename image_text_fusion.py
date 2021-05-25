@@ -20,10 +20,10 @@ from dl_text import text_simple_tf
 class cross_modal(nn.Module):
     def __init__(self,cfg, original_dim, is_train = True, is_transform = True):
         super(cross_modal,self).__init__()
-        self.image_em = retrieval_net(cfg, is_train = is_train, is_transform = is_transform)
+        self.image_em = retrieval_net(cfg, is_train = is_train, is_transform = False) 
         self.text_em = text_simple_tf(original_dim,is_transform)
-        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 100, 1024), nn.BatchNorm1d(1024), nn.LeakyReLU())
-        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 100, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,1024), nn.BatchNorm1d(1024),nn.LeakyReLU())
+        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 32, 512), nn.BatchNorm1d(512), nn.LeakyReLU())
+        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 32, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,512), nn.BatchNorm1d(512),nn.LeakyReLU())
     def forward(self,image, text_feature):
         image_feature = self.image_em(image)
         text_embed = self.text_em(text_feature)
@@ -116,7 +116,7 @@ def main():
     start_epoch = config.TRAIN.BEGIN_EPOCH
     end_epoch = config.TRAIN.END_EPOCH
     least_test_loss = np.inf # enough large
-    pretrain_file_image = '/home/panzhiyu/Homework/img_retrieval/PR_project/result/trans_hr/model_best.pth.tar'
+    pretrain_file_image = '/home/panzhiyu/Homework/img_retrieval/PR_project/result/orig_hrnet//model_best.pth.tar'
     pretrain_file_text = '/home/panzhiyu/Homework/img_retrieval/PR_project/result/trans_text/model_best.pth.tar'
     if config.NETWORK.PRETRAINED_BACKBONE: # no pretrained test
         # load the pretrained two model

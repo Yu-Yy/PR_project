@@ -114,7 +114,7 @@ def main():
     torch.backends.cudnn.deterministic = config.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = config.CUDNN.ENABLED
     print('=> Constructing models ..')
-    model = retrieval_net(config, is_train= True, is_transform=False)
+    model = retrieval_net(config, is_train= True, is_transform=True)
     with torch.no_grad():
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
     model, optimizer = get_optimizer(model)
@@ -126,9 +126,11 @@ def main():
     #     print(f'Using backbone {config.NETWORK.PRETRAINED_BACKBONE}')
     #     model = load_backbone(model, config.NETWORK.PRETRAINED_BACKBONE) # load POSE ESTIMATION BACKBONE
     
-    if config.TRAIN.RESUME:
-        start_epoch, model, optimizer, metrics_load = load_checkpoint(model, optimizer, config.OUTPUT_DIR) # TODO: Load the A1 metrics
+    # if config.TRAIN.RESUME:
+    #     start_epoch, model, optimizer, metrics_load = load_checkpoint(model, optimizer, config.OUTPUT_DIR) # TODO: Load the A1 metrics
+    best_model = torch.load(os.path.join(config.OUTPUT_DIR ,config.TEST.MODEL_FILE))
 
+    model.module.load_state_dict(best_model)
     
     print('=> EVAL...')
     device=torch.device('cuda')

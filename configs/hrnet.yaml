@@ -6,7 +6,7 @@ BACKBONE_MODEL: 'pose_higher_hrnet' #'pose_resnet'
 MODEL: 'hrnet_adabins'
 DATA_DIR: ''
 GPUS:  '0,1'
-OUTPUT_DIR: 'result/orig_hrnet' 
+OUTPUT_DIR: 'result/trans_hr' 
 LOG_DIR: 'log'
 WORKERS: 16
 PRINT_FREQ: 5

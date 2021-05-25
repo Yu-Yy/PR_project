@@ -15,7 +15,7 @@ pca:  acc: 0.7297 acc5: 0.8236
 
 text_pure:  acc: 0.8492 acc5: 0.9132
 mlp: acc1: 0.8848 acc5: 0.9445
-mlp + Transformer: acc1: 0.9090 acc5: 0.9630
+mlp + Transformer: acc1: 0.9132 acc5: 0.9602
 
 ## text + image
 Transformer_Fusion: acc1: acc5: 
