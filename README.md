@@ -29,6 +29,7 @@ Mini_dataset: including 500 labels
 | SIFT+KNN     | 0.6587    | 0.7460     | xxx |
 | HRnet_base     | 0.6060     | 0.6970     | xxx |
 | HRnet+Transformer     | 0.5818     | 0.6230     | xxx |
+| ResNet |xx |xx |xx |
 
 
 ### text:
