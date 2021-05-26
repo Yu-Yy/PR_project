@@ -269,6 +269,7 @@ class Text_dataset(Dataset):
                 self.text.append(new_wordlist)
 
             self.label.extend([l for _ in range(len(v))])
+        
     def __len__(self):
         return len(self.label)
     def __getitem__(self,i):
@@ -287,7 +288,69 @@ class Text_dataset(Dataset):
 
         return text_data,label
 
+# create the text indexing method
+class Text_tfidf_dataset(Dataset):
+    def __init__(self,image_dir,is_train = True):
+        super(Text_tfidf_dataset,self).__init__()
+        self.image_dir = image_dir
+        if is_train:
+            self.dataset = TRAIN
+        else:
+            self.dataset = TEST
+        with open(self.dataset,'rb') as dfile:
+            raw_data = pickle.load(dfile)
+        self.text = list()
+        self.label = list()
+        for l,v in raw_data.items():
+            # process the text information
+            for v_i in v:
+                words = v_i[3].split()
+                new_wordlist = []
+                for word in words:
+                    if word.isalpha():
+                        word = word.upper()
+                        new_wordlist.append(word)
+                # append in txt list
+                self.text.append(new_wordlist)
 
+            self.label.extend([l for _ in range(len(v))])
+
+        #calculate idf
+        self.IDF = np.zeros(Text_dim)
+        for k in range(Text_dim):
+            word = BOG_list[k]
+            for wordlist in self.text:
+                if word in wordlist:
+                    self.IDF[k] = self.IDF[k] + 1
+        total = np.sum(self.IDF)
+        for k in range(Text_dim):
+            if self.IDF[k]!=0:
+                self.IDF[k] = np.log(total/self.IDF[k])
+        
+    def __len__(self):
+        return len(self.label)
+    def __getitem__(self,i):
+        # transfer the word into the dimentsion
+        
+        # text_feature = np.ones((1,Text_dim)) + 1e-5 
+        text_feature = np.zeros((1,Text_dim))
+        wordlist = self.text[i]
+        # create the word feature
+        for word in wordlist:
+            if word in BOG_list:
+                idx = BOG_list.index(word)
+                text_feature[:,idx] += 1.0
+        # text_feature = np.log(text_feature)  # for non-neg
+        text_feature = text_feature/len(wordlist)
+        temp = text_feature * self.IDF
+        if not np.all(temp == 0):
+            text_feature = temp/np.linalg.norm(temp)
+
+
+        text_data = torch.from_numpy(text_feature)
+        label = self.label[i]
+
+        return text_data,label
 
 class mydataset_ResNet(Dataset):
     def __init__(self, image_dir,text_path,resize_height=256, resize_width=256,is_train = True):

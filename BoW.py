@@ -1,6 +1,7 @@
 from sklearn.cluster import KMeans,MiniBatchKMeans
 import numpy as np
 from torch.utils.data.sampler import BatchSampler
+import multiprocessing
 
 
 class myBoW():
@@ -26,8 +27,9 @@ class myBoW():
         
         #聚类
         # self.kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(feas_All)
-        self.kmeans = MiniBatchKMeans(init='k-means++', n_clusters=n_clusters,batch_size=100,n_init=10, max_no_improvement=10, verbose=0)
-        self.kmeans.fit(feas_All)
+        # self.kmeans = MiniBatchKMeans(init='k-means++', n_clusters=n_clusters,batch_size=100,n_init=10, max_no_improvement=10, verbose=0)
+        # self.kmeans.fit(feas_All)
+        self.kmeans = self.__train_cluster__(feas_All)
 
 
 
@@ -57,7 +59,29 @@ class myBoW():
             temp = TF * self.IDF
             self.TF_IDF.append(temp/np.linalg.norm(temp))
 
+    def __train_cluster__(self,feas_All, start_k=3500, end_k=4500):
+        print('training cluster')
+        SSE = []
+        SSE_d1 = [] #sse的一阶导数
+        SSE_d2 = [] #sse的二阶导数
+        models = [] #保存每次的模型
+        i_list = np.linspace(start_k,end_k,11).astype(np.int16)
+        for i in i_list:
+            # kmeans_model = KMeans(n_clusters=i, n_jobs=multiprocessing.cpu_count(), )
+            kmeans_model = MiniBatchKMeans(init='k-means++', n_clusters=i,batch_size=100,n_init=10,max_no_improvement=10, verbose=0)
+            kmeans_model.fit(feas_All)
+            SSE.append(kmeans_model.inertia_)  # 保存每一个k值的SSE值
+            print('{} Means SSE loss = {}'.format(i, kmeans_model.inertia_))
+            models.append(kmeans_model)
+        # 求二阶导数，通过sse方法计算最佳k值
+        SSE_length = len(SSE)
+        for i in range(1, SSE_length):
+            SSE_d1.append((SSE[i - 1] - SSE[i]) / 2)
+        for i in range(1, len(SSE_d1) - 1):
+            SSE_d2.append((SSE_d1[i - 1] - SSE_d1[i]) / 2)
 
+        best_model = models[SSE_d2.index(max(SSE_d2)) + 1]
+        return best_model
 
     def predict(self,feas):
         clusters = list()

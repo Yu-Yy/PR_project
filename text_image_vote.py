@@ -104,7 +104,7 @@ with open(savePath,'wb') as dfile: #Save dic to loacl
 #visualize
 cm = visualize.cal_confusion_matrix(results_image_text['pre'],results_image_text['GT'])
 visualize.plot_confusion_matrix(cm, [], "text image Confusion Matrix")
-plt.savefig('./text image Confusion Matrix.jpg', format='jpg')
+plt.savefig('./results/figures/text image Confusion Matrix.jpg', format='jpg')
 
 
     

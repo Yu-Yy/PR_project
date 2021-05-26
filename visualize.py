@@ -6,6 +6,84 @@ import requests
 import pickle
 
 
+def drawDistribution():
+    '''
+    画出数据的分布（直方图）
+    '''
+    full_dataset = './datasets/class_specific.pkl'
+    train_class_spe = './datasets/train_divide_mini500_eq.pkl'
+    val_class_spe = './datasets/val_divide_mini500_eq.pkl'
+    test_class_spe = './datasets/test_divide_mini500_eq.pkl'
+
+    #load full data
+    with open(full_dataset,'rb') as dfile: #read dic
+        dic_full = pickle.load(dfile)
+    label_list = [item for item in dic_full.keys()]
+    His_full = np.zeros(len(label_list))
+    for n,label in enumerate(label_list):
+        His_full[n] += len(dic_full[label])
+
+
+    #load train data
+    with open(train_class_spe,'rb') as dfile: #read dic
+        dic_train = pickle.load(dfile)
+    train_list = [item for item in dic_train.keys()]
+    His_train = np.zeros(500)
+    for label in train_list:
+        n = label_list.index(label)
+        His_train[n] += len(dic_train[label])
+
+
+    #load val data
+    with open(val_class_spe,'rb') as dfile: #read dic
+        dic_val = pickle.load(dfile)
+    val_list = [item for item in dic_val.keys()]
+    His_val = np.zeros(500)
+    for label in val_list:
+        n = label_list.index(label)
+        His_val[n] += len(dic_val[label])
+
+    #load test data
+    with open(val_class_spe,'rb') as dfile: #read dic
+        dic_test = pickle.load(dfile)
+    test_list = [item for item in dic_test.keys()]
+    His_test = np.zeros(500)
+    for label in test_list:
+        n = label_list.index(label)
+        His_test[n] += len(dic_test[label])
+
+    #draw distritutionfigsize=(20,6)
+    # fig, ax = plt.subplots(ncols=2,nrows=1)
+    plt.figure()
+    X = range(len(label_list))
+    plt.bar(X, His_full, width=0.8,color='b')
+    plt.title('Distribution of full dataset')
+    plt.xlabel('classes')
+    plt.ylabel('number of samples')
+    plt.savefig("./results/figures/Histogram of full dataset.jpg", format='jpg')
+ 
+
+    plt.figure()
+    X = range(500)
+    plt.bar(X, His_train, width=0.8,color='b')
+    plt.bar(X, His_val, width=0.8,color='g',bottom=His_train)
+    plt.bar(X, His_test, width=0.8,color='y',bottom=(His_val+His_train))
+    plt.legend(['Train','Validation','Test'])
+    plt.title('Distribution of mini dataset')
+    plt.xlabel('classes')
+    plt.ylabel('number of samples')
+
+    #save fig
+    plt.savefig("./results/figures/Histogram of mini dataset.jpg", format='jpg')
+
+
+
+
+
+
+    
+
+
 
 
 def cal_confusion_matrix(pre_List,GT_list):
@@ -46,6 +124,7 @@ if __name__=='__main__':
     # [  2  , 0  , 2  ,12  , 8 ,115  , 1],
     # [  2  ,25 ,  0  , 1 , 14 ,  4 ,302]]
     # cm = np.array(cm)
+
     # result_file = './results/test_SIFT_KNN.pkl'
     result_file = './results/test_text_pure.pkl'
     
@@ -55,3 +134,5 @@ if __name__=='__main__':
     cm = cal_confusion_matrix(results['pre'],results['GT'])
     plot_confusion_matrix(cm, [], "text pure Confusion Matrix")
     plt.savefig('./results/figures/text pure Confusion Matrix.jpg', format='jpg')
+    
+    # drawDistribution()

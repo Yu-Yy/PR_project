@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from matplotlib import pyplot as plt
 from dataset import Text_dataset
+from dataset import Text_tfidf_dataset
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pickle
@@ -18,8 +19,10 @@ epoch_num = 1   #总样本循环次数
 batch_size = 1  #训练时的一组数据的大小
 
 #读取数据集,并取出10%作为mini数据集 only test the easy mode
-train_dataset = Text_dataset(image_dir=image_dir, is_train=True)
-test_dataset = Text_dataset(image_dir=image_dir, is_train=False)
+# train_dataset = Text_dataset(image_dir=image_dir, is_train=True)
+# test_dataset = Text_dataset(image_dir=image_dir, is_train=False)
+train_dataset = Text_tfidf_dataset(image_dir=image_dir, is_train=True)
+test_dataset = Text_tfidf_dataset(image_dir=image_dir, is_train=False)
 
 if is_pca:
     dc_er = dc.PCA(n_components=100)
@@ -92,4 +95,4 @@ print(f"acc5 = {acc_rate5:.4f}")
 #save confusion matrix
 cm = visualize.cal_confusion_matrix(results_text['pre'],results_text['GT'])
 visualize.plot_confusion_matrix(cm, [], "text pure Confusion Matrix")
-plt.savefig('./text pure Confusion Matrix.jpg', format='jpg')
+plt.savefig('./results/figures/text pure Confusion Matrix.jpg', format='jpg')

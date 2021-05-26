@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pickle
 from BoW import myBoW
-
+import visualize 
 
 
 
@@ -86,7 +86,7 @@ for n,feas in enumerate(feas_test):
     results_image['GT'].append(labels_test[n])
 
 #save results
-savePath = './results/sift_BoW_pure.pkl'
+savePath = './results/test_sift_BoW.pkl'
 with open(savePath,'wb') as dfile: #Save dic to loacl
         pickle.dump(results_image,dfile)
 
@@ -98,3 +98,9 @@ print('SIFT+BoW：')
 # print(f"err = {err_rate:.4f}")
 print(f"acc1 = {acc_rate1:.4f}")
 print(f"acc5 = {acc_rate5:.4f}")
+
+
+#visualize
+cm = visualize.cal_confusion_matrix(results_image['pre'],results_image['GT'])
+visualize.plot_confusion_matrix(cm, [], "SIFT BoW Confusion Matrix")
+plt.savefig('./results/figures/SIFT BoW Confusion Matrix.jpg', format='jpg')

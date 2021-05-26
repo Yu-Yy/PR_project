@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pickle
 from BoW import myBoW
+import visualize 
 
 
 image_dir = "./shopee-product-matching/train_images"
@@ -100,3 +101,8 @@ print(f"acc5 = {acc_rate5:.4f}")
 savePath = './results/test_SIFT_KNN.pkl'
 with open(savePath,'wb') as dfile: #Save dic to loacl
         pickle.dump(results_image,dfile)
+
+#visualize
+cm = visualize.cal_confusion_matrix(results_image['pre'],results_image['GT'])
+visualize.plot_confusion_matrix(cm, [], "SIFT KNN Confusion Matrix")
+plt.savefig('./results/figures/SIFT KNN Confusion Matrix.jpg', format='jpg')
