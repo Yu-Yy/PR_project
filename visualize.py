@@ -6,15 +6,17 @@ import requests
 import pickle
 
 
+
+
 def cal_confusion_matrix(pre_List,GT_list):
-    pre_List = np.array(pre_List)
     GT_list = np.array(GT_list)
     label_list = np.sort(np.unique(GT_list))
 
     confusion_matrix = np.zeros((len(label_list),len(label_list)))
 
     for i,label in enumerate(label_list):
-        index_list  = np.where(pre_List[:,-1] == label)[0]
+        pre_all = np.array([item[-1] for item in  pre_List])
+        index_list  = np.where(pre_all == label)[0]
         for index in index_list:
             j = np.where(label_list == GT_list[index])[0]
             confusion_matrix[i][j] += 1
@@ -24,7 +26,7 @@ def cal_confusion_matrix(pre_List,GT_list):
 
 
 def plot_confusion_matrix(cm, labels_name, title):
-    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]    # 归一化
+    cm = cm.astype('float') / (cm.sum(axis=1)[:, np.newaxis]+1e-6)    # 归一化
     plt.imshow(cm, interpolation='nearest')    # 在特定的窗口上显示图像
     plt.title(title)    # 图像标题
     plt.colorbar()
@@ -44,10 +46,12 @@ if __name__=='__main__':
     # [  2  , 0  , 2  ,12  , 8 ,115  , 1],
     # [  2  ,25 ,  0  , 1 , 14 ,  4 ,302]]
     # cm = np.array(cm)
-    result_file = './results/test_SIFT_KNN.pkl'
+    # result_file = './results/test_SIFT_KNN.pkl'
+    result_file = './results/test_text_pure.pkl'
+    
     with open(result_file,'rb') as f:
         results = pickle.load(f)
 
     cm = cal_confusion_matrix(results['pre'],results['GT'])
-    plot_confusion_matrix(cm, range(cm.shape[0]), "SIFT KNN Confusion Matrix")
-    plt.savefig('./SIFT KNN Confusion Matrix.jpg', format='jpg')
+    plot_confusion_matrix(cm, [], "text pure Confusion Matrix")
+    plt.savefig('./results/figures/text pure Confusion Matrix.jpg', format='jpg')

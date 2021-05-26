@@ -91,5 +91,5 @@ print(f"acc5 = {acc_rate5:.4f}")
 
 #save confusion matrix
 cm = visualize.cal_confusion_matrix(results_text['pre'],results_text['GT'])
-visualize.plot_confusion_matrix(cm, range(cm.shape[0]), "text pure Confusion Matrix")
+visualize.plot_confusion_matrix(cm, [], "text pure Confusion Matrix")
 plt.savefig('./text pure Confusion Matrix.jpg', format='jpg')

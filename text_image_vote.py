@@ -7,6 +7,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pickle
 from BoW import myBoW
+import visualize 
+
 
 #load results:
 result_sift_knn_file = './results/test_SIFT_KNN.pkl'
@@ -50,9 +52,11 @@ print(f"acc1 = {acc_rate1:.4f}")
 print(f"acc5 = {acc_rate5:.4f}")
 
 #Fusion
-acc_Borda = 0
-acc_vote = 0
-acc5_fusion = 0
+acc1_Borda = 0
+acc5_Borda = 0
+# acc_vote = 0
+# acc5_fusion = 0
+results_image_text = {'pre':[],'GT':[]}
 for n in range(len(results_text['pre'])):
     #Borda Count
     preList = np.unique(np.hstack((results_image['pre'][n],results_text['pre'][n])))
@@ -60,30 +64,47 @@ for n in range(len(results_text['pre'])):
     for i in range(5):
         socreList[np.where(preList == results_image['pre'][n][i])] += i
         socreList[np.where(preList == results_text['pre'][n][i])] += i
-    bestLabel = preList[np.argmax(socreList)]
-    if bestLabel == results_text['GT'][n]:
-        acc_Borda += 1
 
+    index_list = np.argsort(socreList)
+    bestLabels = preList[index_list[-5:]]
+    # bestLabel = preList[np.argmax(socreList)]
+    
+    if bestLabels[-1] == results_text['GT'][n]:
+        acc1_Borda += 1
+    if results_text['GT'][n] in bestLabels: #TODO: text need to be further index
+        acc5_Borda = acc5_Borda + 1
 
-    #Vote
-    pre = np.hstack((results_image['pre'][n],results_text['pre'][n])).tolist()
-    maxlabel = max(pre,key=pre.count)
-    if(maxlabel==results_text['GT'][n]):
-        acc_vote = acc_vote + 1
-    if(results_text['GT'][n] in pre):
-        acc5_fusion = acc5_fusion + 1
-acc_rate_vote = acc_vote / len(results_text['pre'])
-acc_rate5_fusion = acc5_fusion / len(results_text['pre'])
-acc_rate_Borda = acc_Borda / len(results_text['pre'])
+    results_image_text['pre'].append(bestLabels.tolist())
+    results_image_text['GT'].append(results_text['GT'][n])
+
+    # #Vote
+    # pre = np.hstack((results_image['pre'][n],results_text['pre'][n])).tolist()
+    # maxlabel = max(pre,key=pre.count)
+    # if(maxlabel==results_text['GT'][n]):
+    #     acc_vote = acc_vote + 1
+    # if(results_text['GT'][n] in pre):
+    #     acc5_fusion = acc5_fusion + 1
+# acc_rate_vote = acc_vote / len(results_text['pre'])
+# acc_rate5_fusion = acc5_fusion / len(results_text['pre'])
+acc1_rate_Borda = acc1_Borda / len(results_text['pre'])
+acc5_rate_Borda = acc5_Borda / len(results_text['pre'])
 print('----------------------------')
 print('Text_Image_fusion:')
-print(f"acc_vote = {acc_rate_vote:.4f}")
-print(f"acc_rate_Borda = {acc_rate_Borda:.4f}")
-print(f"acc5_fusion = {acc_rate5_fusion:.4f}")
+# print(f"acc_vote = {acc_rate_vote:.4f}")
+print(f"acc1_rate_Borda = {acc1_rate_Borda:.4f}")
+print(f"acc5_rate_Borda = {acc5_rate_Borda:.4f}")
+# print(f"acc5_fusion = {acc_rate5_fusion:.4f}")
         
 
+#save results
+savePath = './results/test_text_image.pkl'
+with open(savePath,'wb') as dfile: #Save dic to loacl
+        pickle.dump(results_image_text,dfile)
         
-        
+#visualize
+cm = visualize.cal_confusion_matrix(results_image_text['pre'],results_image_text['GT'])
+visualize.plot_confusion_matrix(cm, [], "text image Confusion Matrix")
+plt.savefig('./text image Confusion Matrix.jpg', format='jpg')
 
 
     
