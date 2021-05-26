@@ -19,6 +19,7 @@ from pathlib import Path
 # loss
 from lib.utils.loss import triplet_loss_cl
 from tqdm import tqdm
+import pickle
 # from lib.models.Vit_header import VitEncoder
 
 
@@ -109,7 +110,7 @@ def main():
     test_loader = torch.utils.data.DataLoader(
         test_dataset,
         batch_size=config.TEST.BATCH_SIZE * len(gpus),
-        shuffle=True,
+        shuffle=False,
         num_workers=config.WORKERS,
         pin_memory=True)
 
@@ -153,6 +154,7 @@ def main():
     # testing
     acc1 = 0
     acc5 = 0
+    results_image = {'pre':[],'GT':[]}
     for j, batch in tqdm(enumerate(test_loader)):
         test_image, test_label = batch
         test_image = test_image.to(device)
@@ -167,10 +169,17 @@ def main():
             index = torch.flip(index,dims=[0]) 
             index_5 = index[:5]
             pred_label = back_label[index_5.cpu()]
+            results_image['pre'].append(pred_label)
+            results_image['GT'].append(test_label[t])
             if test_label[t] in pred_label:
                 acc5 = acc5 + 1
             if test_label[t] == pred_label[0]:
                 acc1 = acc1 + 1
+
+
+    file_name = 'pred_result/resnet_result.pkl'
+    with open(file_name, 'wb') as f:
+        pickle.dump(results_image , f)
 
     acc_rate5 = acc5 / len(test_dataset)
     acc_rate1 = acc1 / len(test_dataset)

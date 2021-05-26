@@ -23,13 +23,13 @@ Mini_dataset: including 500 labels
 
 | Method     | acc1     | acc5     | recall     |
 | ---------- | :-----------:  | :-----------: | :-----------: |
-| nmf     | 0.3698    | 0.4481     | xxx |
-| pca     | 0.5605     | 0.5932     | xxx |
-| pca_aug     | 0.5733     | 0.5917     | xxx |
+| nmf     | 0.4275    | 0.5175     | xxx |
+| pca     | 0.5650    | 0.6025     | xxx |
+| pca_aug     | 0.5725     | 0.5950     | xxx |
 | SIFT+KNN     | 0.6587    | 0.7460     | xxx |
-| HRnet_base     | 0.6060     | 0.6970     | xxx |
-| HRnet+Transformer     | 0.5818     | 0.6230     | xxx |
-| ResNet |  0.8364   |  0.9203   |  xx   |
+| HRnet_base     | 0.6125    | 0.7200     | xxx |
+| HRnet+Transformer     | 0.5725     | 0.6225     | xxx |
+| ResNet |  0.8450   |  0.9400   |  xx   |
 
 
 
@@ -38,18 +38,19 @@ Mini_dataset: including 500 labels
 
 | Method     | acc1     | acc5     |
 | ---------- | :-----------:  | :-----------: |
-| Text_pure     | 0.8492     | 0.9132     |
-| NMF     | 0.6785     | 0.8137     |
-| PCA     | 0.7297    | 0.8236     |
-| MLP     | 0.8848     | 0.9445     |
-| MLP+Transformer     | 0.9132    | 0.9602     |
+| Text_pure     | 0.8400     | 0.9025     |
+| NMF     | 0.6950    | 0.7975     |
+| PCA     | 0.7500    | 0.8475     |
+| MLP     | 0.9025     | 0.9550     |
+| MLP+Transformer     | 0.9175    | 0.9600     |
 
 ### text + image
 
 | Method     | acc1     | acc5     |
 | ---------- | :-----------:  | :-----------: |
-| Transformer_Fusion     | 0.6714     | 0.8009     |
+| hrnet_Transformer_Fusion     | 0.6714     | 0.8009     |
 | HRnet + Text_Trans     | 0.6245  |   0.7226   |
+| Resnet + Text_Trans     |   |      |
 | Voting_method     |      |      |
 
 

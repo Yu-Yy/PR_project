@@ -17,14 +17,15 @@ from lib.utils.loss import triplet_loss_cl
 from hrnet_retrieval import retrieval_net
 from dl_text import text_simple_tf
 from tqdm import tqdm
+import pickle
 
 class cross_modal(nn.Module):
     def __init__(self,cfg, original_dim, is_train = True, is_transform = True):
         super(cross_modal,self).__init__()
-        self.image_em = retrieval_net(cfg, is_train = is_train, is_transform = False) #is_transform
+        self.image_em = retrieval_net(cfg, is_train = is_train, is_transform = True) #is_transform
         self.text_em = text_simple_tf(original_dim,is_transform)
-        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 32, 512), nn.BatchNorm1d(512), nn.LeakyReLU())
-        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 32, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,512), nn.BatchNorm1d(512),nn.LeakyReLU())
+        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 100, 512), nn.BatchNorm1d(512), nn.LeakyReLU())
+        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 100, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,512), nn.BatchNorm1d(512),nn.LeakyReLU())
     def forward(self,image, text_feature):
         image_feature = self.image_em(image)
         text_embed = self.text_em(text_feature)
@@ -102,7 +103,7 @@ def main():
     test_loader = torch.utils.data.DataLoader(
         test_dataset,
         batch_size=config.TEST.BATCH_SIZE * len(gpus),
-        shuffle=True,
+        shuffle=False,
         num_workers=config.WORKERS,
         pin_memory=True)
 
@@ -143,6 +144,7 @@ def main():
 
     acc1 = 0
     acc5 = 0
+    results_image = {'pre':[],'GT':[]}
     for j, batch in tqdm(enumerate(test_loader)):
         test_image, test_text_feature ,test_label = batch
         test_image = test_image.to(device)
@@ -158,10 +160,16 @@ def main():
             index = torch.flip(index,dims=[0]) 
             index_5 = index[:5]
             pred_label = back_label[index_5.cpu()]
+            results_image['pre'].append(pred_label)
+            results_image['GT'].append(test_label[t])
             if test_label[t] in pred_label:
                 acc5 = acc5 + 1
             if test_label[t] == pred_label[0]:
                 acc1 = acc1 + 1
+
+    file_name = 'pred_result/hrtr_tr_fusing_result.pkl'
+    with open(file_name, 'wb') as f:
+        pickle.dump(results_image , f)
 
     acc_rate5 = acc5 / len(test_dataset)
     acc_rate1 = acc1 / len(test_dataset)

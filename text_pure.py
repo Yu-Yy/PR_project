@@ -8,7 +8,7 @@ from tqdm import tqdm
 import pickle
 import sklearn.decomposition as dc
 
-is_pca = True
+is_pca = False
 is_nmf = False
 
 image_dir = "../shopee-product-matching/train_images"
@@ -40,18 +40,18 @@ for batch_data in tqdm(train_loader):
     labels_train.append(label)
 
 feas_train = np.concatenate(feas_train,axis=0)
-feas_mean = np.mean(feas_train, axis=0, keepdims=True)
-feas_train = feas_train - feas_mean
+# feas_mean = np.mean(feas_train, axis=0, keepdims=True)
+# feas_train = feas_train - feas_mean
 
 labels_train = np.array(labels_train)
-    
-trainned_base = dc_er.fit_transform(feas_train)
+trainned_base  = feas_train
+# trainned_base = dc_er.fit_transform(feas_train)
 
 # do the test
-test_loader = DataLoader(dataset = test_dataset,batch_size = 1,shuffle = True)
+test_loader = DataLoader(dataset = test_dataset,batch_size = 1,shuffle = False)
 acc5 = 0
 acc1 = 0
-
+results_image = {'pre':[],'GT':[]}
 for batch_data in tqdm(test_loader):
     text,label = batch_data
     #处理图像数据，提取SIFT特征
@@ -59,17 +59,23 @@ for batch_data in tqdm(test_loader):
     text_test = text.numpy()
     # img_c = img.reshape(1,-1)
     text_test = text_test[0,...]
-    text_test = text_test - feas_mean
-    text_feature = dc_er.transform(text_test)
+    # text_test = text_test - feas_mean
+    # text_feature = dc_er.transform(text_test)
+    text_feature = text_test
     distance_s = np.sum((text_feature - trainned_base) ** 2, axis=-1)
     idx_sort = np.argsort(distance_s)
     idx_top5 = idx_sort[:5]
     pred_label = labels_train[idx_top5]
-
+    results_image['pre'].append(pred_label)
+    results_image['GT'].append(label[0])
     if label[0] in pred_label: #TODO: text need to be further index
         acc5 = acc5 + 1
     if label[0] == pred_label[0]:
         acc1 = acc1 + 1
+
+file_name = 'pred_result/pure_text_result.pkl'
+with open(file_name, 'wb') as f:
+    pickle.dump(results_image , f)
 
 # err_rate = err/len(test_dataset)
 # acc = 1-err_rate
