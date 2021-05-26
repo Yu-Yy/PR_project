@@ -48,10 +48,10 @@ Mini_dataset: including 500 labels
 
 | Method     | acc1     | acc5     |
 | ---------- | :-----------:  | :-----------: |
-| hrnet_Transformer_Fusion     | 0.6714     | 0.8009     |
-| HRnet + Text_Trans     | 0.6245  |   0.7226   |
-| Resnet + Text_Trans     |   |      |
-| Voting_method     |      |      |
+| hrnet_Transformer_Fusion     | 0.6325     | 0.7650     |
+| HRnet + Text_Trans     | 0.6250  |   0.7375   |
+| Resnet + Text_Trans     |  0.7725   | 0.8700  |
+| Borda_method (res + Text_Trans)     | 0.9575     | 0.9950  |
 
 
 ## Model download

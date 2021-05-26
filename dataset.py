@@ -287,11 +287,6 @@ class Text_dataset(Dataset):
         return text_data,label
 
 
-
-
-
-
-
 if __name__=='__main__':
     image_dir = "../shopee-product-matching/train_images"
     text_path = "../shopee-product-matching/train.csv"           
