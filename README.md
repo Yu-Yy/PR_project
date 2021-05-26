@@ -29,7 +29,8 @@ Mini_dataset: including 500 labels
 | SIFT+KNN     | 0.6587    | 0.7460     | xxx |
 | HRnet_base     | 0.6060     | 0.6970     | xxx |
 | HRnet+Transformer     | 0.5818     | 0.6230     | xxx |
-| ResNet |xx |xx |xx |
+| ResNet |  0.8364   |  0.9203   |  xx   |
+
 
 
 ### text:
@@ -48,7 +49,7 @@ Mini_dataset: including 500 labels
 | Method     | acc1     | acc5     |
 | ---------- | :-----------:  | :-----------: |
 | Transformer_Fusion     | 0.6714     | 0.8009     |
-| HRnet + Text_Trans     |      |      |
+| HRnet + Text_Trans     | 0.6245  |   0.7226   |
 | Voting_method     |      |      |
 
 

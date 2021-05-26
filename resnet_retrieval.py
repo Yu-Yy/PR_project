@@ -18,7 +18,7 @@ from lib.datasets.trip_dataloader import trip_retrieval
 from pathlib import Path
 # loss
 from lib.utils.loss import triplet_loss_cl
-from lib.models.Vit_header import VitEncoder
+# from lib.models.Vit_header import VitEncoder
 
 class retrieval_net(nn.Module):
     def __init__(self,cfg, is_train = True): #, is_transform=True

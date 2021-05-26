@@ -114,7 +114,7 @@ def main():
     torch.backends.cudnn.deterministic = config.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = config.CUDNN.ENABLED
     print('=> Constructing models ..')
-    model = retrieval_net(config, is_train= True, is_transform=True)
+    model = retrieval_net(config, is_train= True, is_transform=False)
     with torch.no_grad():
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
     model, optimizer = get_optimizer(model)
