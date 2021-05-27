@@ -19,6 +19,7 @@ from pathlib import Path
 from lib.utils.loss import triplet_loss_cl
 from tqdm import tqdm
 from lib.models.Vit_header import VitEncoder
+import pickle
 
 
 class retrieval_net(nn.Module):
@@ -106,7 +107,7 @@ def main():
     test_loader = torch.utils.data.DataLoader(
         test_dataset,
         batch_size=config.TEST.BATCH_SIZE * len(gpus),
-        shuffle=True,
+        shuffle=False,
         num_workers=config.WORKERS,
         pin_memory=True)
 
@@ -126,9 +127,11 @@ def main():
     #     print(f'Using backbone {config.NETWORK.PRETRAINED_BACKBONE}')
     #     model = load_backbone(model, config.NETWORK.PRETRAINED_BACKBONE) # load POSE ESTIMATION BACKBONE
     
-    if config.TRAIN.RESUME:
-        start_epoch, model, optimizer, metrics_load = load_checkpoint(model, optimizer, config.OUTPUT_DIR) # TODO: Load the A1 metrics
+    # if config.TRAIN.RESUME:
+    #     start_epoch, model, optimizer, metrics_load = load_checkpoint(model, optimizer, config.OUTPUT_DIR) # TODO: Load the A1 metrics
+    best_model = torch.load(os.path.join(config.OUTPUT_DIR ,config.TEST.MODEL_FILE))
 
+    model.module.load_state_dict(best_model)
     
     print('=> EVAL...')
     device=torch.device('cuda')
@@ -148,6 +151,7 @@ def main():
     # testing
     acc1 = 0
     acc5 = 0
+    results_image = {'pre':[],'GT':[]}
     for j, batch in tqdm(enumerate(test_loader)):
         test_image, test_label = batch
         test_image = test_image.to(device)
@@ -162,10 +166,16 @@ def main():
             index = torch.flip(index,dims=[0]) 
             index_5 = index[:5]
             pred_label = back_label[index_5.cpu()]
+            results_image['pre'].append(pred_label)
+            results_image['GT'].append(test_label[t])
             if test_label[t] in pred_label:
                 acc5 = acc5 + 1
             if test_label[t] == pred_label[0]:
                 acc1 = acc1 + 1
+
+    file_name = 'pred_result/hrnet_result.pkl'
+    with open(file_name, 'wb') as f:
+        pickle.dump(results_image , f)
 
     acc_rate5 = acc5 / len(test_dataset)
     acc_rate1 = acc1 / len(test_dataset)

@@ -19,8 +19,8 @@ Text_dim = len(BOG_list)
 TEST = 'datasets/test_divide_eq.pkl'  # using the whole dataset to train the twins network
 TRAIN = 'datasets/train_divide_eq.pkl'
 
-TEST_V = 'datasets/test_divide_mini_eq.pkl'
-TRAIN_V = 'datasets/train_divide_mini_eq.pkl'
+TEST_V = 'datasets/test_divide_mini500_eq.pkl'
+TRAIN_V = 'datasets/train_divide_mini500_eq.pkl'
 
 class trip_retrieval(Dataset):  # Try to using simple metric learning loss via classification comparasion
     def __init__(self, image_folder, is_train = True, resize_height = 640, resize_width = 640):

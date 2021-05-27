@@ -13,14 +13,14 @@ import cv2
 from utils.data_augmentation import DataAugmentation
 
 
-BOG_file = 'datasets/Total_BoW.pkl'
-with open(BOG_file,'rb') as f:
-    BOG = pickle.load(f)
-BOG_list = list(BOG)
-Text_dim = len(BOG_list)
+BOW_file = 'datasets/Total_BoW.pkl'
+with open(BOW_file,'rb') as f:
+    BOW = pickle.load(f)
+BOW_list = list(BOW)
+Text_dim = len(BOW_list)
 
-TEST = 'datasets/test_divide_mini_eq.pkl' 
-TRAIN = 'datasets/train_divide_mini_eq.pkl'
+TEST = 'datasets/test_divide_mini500_eq.pkl' 
+TRAIN = 'datasets/train_divide_mini500_eq.pkl'
 
 class mydataset_SIFT(Dataset):
     def __init__(self, image_dir,text_path,resize_height=640, resize_width=640,is_train = True):
@@ -277,19 +277,14 @@ class Text_dataset(Dataset):
         wordlist = self.text[i]
         # create the word feature
         for word in wordlist:
-            if word in BOG_list:
-                idx = BOG_list.index(word)
+            if word in BOW_list:
+                idx = BOW_list.index(word)
                 text_feature[:,idx] += 1.0
         text_feature = np.log(text_feature)  # for non-neg
         text_data = torch.from_numpy(text_feature)
         label = self.label[i]
 
         return text_data,label
-
-
-
-
-
 
 
 if __name__=='__main__':

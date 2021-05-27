@@ -6,7 +6,7 @@ BACKBONE_MODEL: 'pose_higher_hrnet' #'pose_resnet'
 MODEL: 'hrnet_adabins'
 DATA_DIR: ''
 GPUS:  '0,1'
-OUTPUT_DIR: 'result/fusing_tr_samedim' 
+OUTPUT_DIR: 'result/fusing_res_tr' 
 LOG_DIR: 'log'
 WORKERS: 16
 PRINT_FREQ: 5
@@ -144,17 +144,17 @@ POSE_RESNET:   # 替换成higher_HRnet
 LOSS:
   USE_TARGET_WEIGHT: true
 TRAIN:
-  BATCH_SIZE: 4
+  BATCH_SIZE: 6
   SHUFFLE: true
   BEGIN_EPOCH: 0
   END_EPOCH: 40
   RESUME: True
   OPTIMIZER: adam
-  LR: 0.0001
+  LR: 0.001
 
 TEST:
   MODEL_FILE: 'model_best.pth.tar' #'final_state.pth.tar' 
-  BATCH_SIZE: 2 # orig 6
+  BATCH_SIZE: 3 # orig 6
 DEBUG:
   DEBUG: true
   SAVE_HEATMAPS_GT: true

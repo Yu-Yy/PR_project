@@ -14,22 +14,33 @@ from lib.datasets.trip_dataloader import triplet_image_text_data
 from pathlib import Path
 from lib.utils.loss import triplet_loss_cl
 # import the model
-from hrnet_retrieval import retrieval_net
+from resnet_retrieval import retrieval_net
 from dl_text import text_simple_tf
+from lib.models.text_tfheader import TextEncoder
 
 class cross_modal(nn.Module):
     def __init__(self,cfg, original_dim, is_train = True, is_transform = True):
         super(cross_modal,self).__init__()
-        self.image_em = retrieval_net(cfg, is_train = is_train, is_transform = False) 
+        self.image_em = retrieval_net(cfg, is_train = is_train, is_transform = False) #
         self.text_em = text_simple_tf(original_dim,is_transform)
-        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 32, 512), nn.BatchNorm1d(512), nn.LeakyReLU())
-        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 32, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,512), nn.BatchNorm1d(512),nn.LeakyReLU())
+        self.is_transformf = True
+        self.tr_layer = nn.Sequential(nn.Linear(1024, 1000), nn.BatchNorm1d(1000), nn.LeakyReLU())
+        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 1000, 1024), nn.BatchNorm1d(1024), nn.LeakyReLU())
+        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 1000, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,1024), nn.BatchNorm1d(1024),nn.LeakyReLU())
+        self.fusing_tr = TextEncoder()
     def forward(self,image, text_feature):
         image_feature = self.image_em(image)
         text_embed = self.text_em(text_feature)
         # import pdb;pdb.set_trace()
-        Fusion_f = torch.cat([image_feature, text_embed], dim=-1)
-        Fusion_f = self.Linear_fusing1(Fusion_f) + self.Linear_fusing2(Fusion_f) 
+        if not self.is_transformf:
+            Fusion_f = torch.cat([image_feature, text_embed], dim=-1)
+            Fusion_f = self.Linear_fusing1(Fusion_f) + self.Linear_fusing2(Fusion_f)
+        else:
+            tr_text = self.tr_layer(text_embed)
+            fuse = torch.cat([image_feature.unsqueeze(-1), tr_text.unsqueeze(-1)],dim=-1)
+            fusing = self.fusing_tr(fuse)
+            fusing = nn.functional.adaptive_max_pool1d(fusing ,1)
+            Fusion_f = fusing.squeeze(-1)
 
         output_feature = Fusion_f / torch.norm(Fusion_f,dim=-1,keepdim=True)
         return output_feature
@@ -116,7 +127,7 @@ def main():
     start_epoch = config.TRAIN.BEGIN_EPOCH
     end_epoch = config.TRAIN.END_EPOCH
     least_test_loss = np.inf # enough large
-    pretrain_file_image = '/home/panzhiyu/Homework/img_retrieval/PR_project/result/orig_hrnet//model_best.pth.tar'
+    pretrain_file_image = '/home/panzhiyu/Homework/img_retrieval/PR_project/result/pure_resnet/model_best.pth.tar'
     pretrain_file_text = '/home/panzhiyu/Homework/img_retrieval/PR_project/result/trans_text/model_best.pth.tar'
     if config.NETWORK.PRETRAINED_BACKBONE: # no pretrained test
         # load the pretrained two model

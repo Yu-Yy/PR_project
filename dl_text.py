@@ -109,7 +109,7 @@ def main():
     torch.backends.cudnn.deterministic = config.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = config.CUDNN.ENABLED
     print('=> Constructing models ..')
-    model = text_simple_tf(original_dim=11914, is_transform=False)
+    model = text_simple_tf(original_dim=11914, is_transform=True)
     with torch.no_grad():
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
     model, optimizer = get_optimizer(model)

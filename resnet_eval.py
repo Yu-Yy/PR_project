@@ -1,45 +1,47 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import os.path as osp
-from tensorboardX import SummaryWriter
-import torch.backends.cudnn as cudnn
 import torch.optim as optim
+import torch.backends.cudnn as cudnn
 import torch.utils.data
 import torch.utils.data.distributed
+from torch.utils.data.dataloader import default_collate
+from tensorboardX import SummaryWriter
+import sys
 import os
 import argparse
 from lib.config.hrnet_config import update_config
 from lib.config.hrnet_config import config
-from lib.datasets.trip_dataloader import text_retrieval
+# from lib.models.Hrnet import HigherResolutionNet
+import torchvision
+from lib.datasets.trip_dataloader import val_retrieval
 from pathlib import Path
-from lib.models.text_tfheader import TextEncoder
+# loss
 from lib.utils.loss import triplet_loss_cl
 from tqdm import tqdm
 import pickle
+# from lib.models.Vit_header import VitEncoder
 
-class text_simple_tf(nn.Module):
-    def __init__(self, original_dim, is_transform = True):
-        super(text_simple_tf,self).__init__()
-        # add one mlp to fuse the dimension
-        self.transform = is_transform
-        self.linear1 = nn.Sequential(nn.Linear(original_dim, 4096), nn.BatchNorm1d(4096),nn.LeakyReLU(),
-                                        nn.Linear(4096,1024), nn.BatchNorm1d(1024), nn.LeakyReLU())
-        self.linear2 = nn.Sequential(nn.Linear(original_dim,1024), nn.BatchNorm1d(1024), nn.LeakyReLU())
 
-        self.textencoder = TextEncoder()
-    def forward(self,feature):
-        batch_size = feature.shape[0]
-        if self.transform:
-            fusion_feature = torch.cat([self.linear1(feature.squeeze(-1)).unsqueeze(-1) , self.linear2(feature.squeeze(-1)).unsqueeze(-1)], dim=-1)
-            embeded_feature = self.textencoder(fusion_feature)
-            extracted_feature = nn.functional.adaptive_max_pool1d(embeded_feature,1) 
-            extracted_feature = extracted_feature.reshape(batch_size,-1)
-            output_feature = extracted_feature / torch.norm(extracted_feature,dim=-1,keepdim=True)
-        else:
-            embeded_feature = self.linear1(feature.squeeze(-1)) + self.linear2(feature.squeeze(-1))
-            output_feature = embeded_feature / torch.norm(embeded_feature,dim=-1,keepdim=True)
-
+class retrieval_net(nn.Module):
+    def __init__(self,cfg, is_train = True): #, is_transform=True
+        super(retrieval_net,self).__init__()
+        # self.backbone = HigherResolutionNet(cfg, is_train=is_train)
+        self.backbone = torchvision.models.resnet50(pretrained=True, progress=True)
+        # self.is_transform = is_transform
+        # if self.is_transform:
+        #     self.self_attention = VitEncoder(cfg.MODEL_EXTRA.STAGE4.NUM_CHANNELS[0])
+    def forward(self, images):
+        features = self.backbone(images) # 1000 dim feature output
+        # import pdb; pdb.set_trace()
+        # batch_size = features.shape[0]
+        # if self.is_transform:
+        #     output_feature = self.self_attention(features)
+        # else:
+        #     extracted_feature = nn.functional.adaptive_avg_pool2d(features,(1,1))
+        #     output_feature = extracted_feature.reshape(batch_size,-1)
+        # need to normalize the feature
+        output_feature = features / torch.norm(features,dim=-1,keepdim=True)
         return output_feature
 
 def parse_args():
@@ -54,6 +56,18 @@ def get_optimizer(model):
     lr = config.TRAIN.LR
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.module.parameters()), lr=lr) # 整体模型权重均全部重新训练
     return model, optimizer
+
+def load_backbone(model,pretrained_file):
+    pretrained_state_dict = torch.load(pretrained_file)
+    model_state_dict_backbone = model.module.backbone.state_dict()
+    prefix_b = 'backbone.'
+    new_pretrained_state_dict_bacbone = {}
+    for k, v in pretrained_state_dict.items():
+        if k.replace(prefix_b, "") in model_state_dict_backbone and v.shape == model_state_dict_backbone[k.replace(prefix_b, "")].shape:     #.replace(prefix, "") .replace(prefix, "")
+            new_pretrained_state_dict_bacbone[k.replace(prefix_b, "")] = v
+    print("load statedict from {}".format(pretrained_file))
+    model.module.backbone.load_state_dict(new_pretrained_state_dict_bacbone)
+    return model
 
 def load_checkpoint(model, optimizer, output_dir, filename='checkpoint.pth.tar'):
     file = os.path.join(output_dir, filename)
@@ -73,14 +87,19 @@ def load_checkpoint(model, optimizer, output_dir, filename='checkpoint.pth.tar')
         print('=> no checkpoint found at {}'.format(file))
         return 0, model, optimizer, np.inf
 
+def save_checkpoint(states, is_best, output_dir, filename='checkpoint.pth.tar'):
+    torch.save(states, os.path.join(output_dir, filename))
+    if is_best and 'state_dict' in states:
+        torch.save(states['state_dict'],
+                   os.path.join(output_dir, 'model_best.pth.tar'))
 
 def main():
     args = parse_args() # 读取 cfg 参数，config表示之后需要看一下
 
     gpus = [int(i) for i in config.GPUS.split(',')]
     image_folder = '/Extra/panzhiyu/img_retrieval/shopee-product-matching/train_images'
-    back_dataset = text_retrieval(image_folder,is_train = True)
-    test_dataset = text_retrieval(image_folder,is_train = False)
+    back_dataset = val_retrieval(image_folder,is_train = True)
+    test_dataset = val_retrieval(image_folder,is_train = False)
     back_loader = torch.utils.data.DataLoader(
         back_dataset,
         batch_size=config.TRAIN.BATCH_SIZE * len(gpus),
@@ -99,7 +118,7 @@ def main():
     torch.backends.cudnn.deterministic = config.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = config.CUDNN.ENABLED
     print('=> Constructing models ..')
-    model = text_simple_tf(original_dim = 11914, is_transform=True)
+    model = retrieval_net(config, is_train= True) #, is_transform=False
     with torch.no_grad():
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
     model, optimizer = get_optimizer(model)
@@ -157,9 +176,11 @@ def main():
             if test_label[t] == pred_label[0]:
                 acc1 = acc1 + 1
 
-    file_name = 'pred_result/text_mpl_transformer_result.pkl'
+
+    file_name = 'pred_result/resnet_result.pkl'
     with open(file_name, 'wb') as f:
         pickle.dump(results_image , f)
+
     acc_rate5 = acc5 / len(test_dataset)
     acc_rate1 = acc1 / len(test_dataset)
     print('----------------------------')

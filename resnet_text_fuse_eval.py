@@ -14,24 +14,36 @@ from lib.datasets.trip_dataloader import image_text_eval
 from pathlib import Path
 from lib.utils.loss import triplet_loss_cl
 # import the model
-from hrnet_retrieval import retrieval_net
+from resnet_retrieval import retrieval_net
 from dl_text import text_simple_tf
-from tqdm import tqdm
+from lib.models.text_tfheader import TextEncoder
 import pickle
+from tqdm import tqdm
 
 class cross_modal(nn.Module):
     def __init__(self,cfg, original_dim, is_train = True, is_transform = True):
         super(cross_modal,self).__init__()
-        self.image_em = retrieval_net(cfg, is_train = is_train, is_transform = False) #is_transform
+        self.image_em = retrieval_net(cfg, is_train = is_train, is_transform = False) #
         self.text_em = text_simple_tf(original_dim,is_transform)
-        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 32, 512), nn.BatchNorm1d(512), nn.LeakyReLU())
-        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 32, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,512), nn.BatchNorm1d(512),nn.LeakyReLU())
+        self.is_transformf = False
+        if self.is_transformf:
+            self.fusing_tr = TextEncoder()
+            self.tr_layer = nn.Sequential(nn.Linear(1024, 1000), nn.BatchNorm1d(1000), nn.LeakyReLU())
+        self.Linear_fusing1 = nn.Sequential(nn.Linear(1024 + 1000, 1024), nn.BatchNorm1d(1024), nn.LeakyReLU())
+        self.Linear_fusing2 = nn.Sequential(nn.Linear(1024 + 1000, 2048), nn.BatchNorm1d(2048), nn.LeakyReLU(), nn.Linear(2048,1024), nn.BatchNorm1d(1024),nn.LeakyReLU())
     def forward(self,image, text_feature):
         image_feature = self.image_em(image)
         text_embed = self.text_em(text_feature)
         # import pdb;pdb.set_trace()
-        Fusion_f = torch.cat([image_feature, text_embed], dim=-1)
-        Fusion_f = self.Linear_fusing1(Fusion_f) + self.Linear_fusing2(Fusion_f) 
+        if not self.is_transformf:
+            Fusion_f = torch.cat([image_feature, text_embed], dim=-1)
+            Fusion_f = self.Linear_fusing1(Fusion_f) + self.Linear_fusing2(Fusion_f)
+        else:
+            tr_text = self.tr_layer(text_embed)
+            fuse = torch.cat([image_feature.unsqueeze(-1), tr_text.unsqueeze(-1)],dim=-1)
+            fusing = self.fusing_tr(fuse)
+            fusing = nn.functional.adaptive_max_pool1d(fusing ,1)
+            Fusion_f = fusing.squeeze(-1)
 
         output_feature = Fusion_f / torch.norm(Fusion_f,dim=-1,keepdim=True)
         return output_feature
@@ -115,15 +127,48 @@ def main():
     with torch.no_grad():
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
     model, optimizer = get_optimizer(model)
+    start_epoch = config.TRAIN.BEGIN_EPOCH
+    end_epoch = config.TRAIN.END_EPOCH
+    least_test_loss = np.inf # enough large
+    # pretrain_file_image = '/home/panzhiyu/Homework/img_retrieval/PR_project/result/pure_resnet/model_best.pth.tar'
+    # pretrain_file_text = '/home/panzhiyu/Homework/img_retrieval/PR_project/result/trans_text/model_best.pth.tar'
+    # if config.NETWORK.PRETRAINED_BACKBONE: # no pretrained test
+    #     # load the pretrained two model
+    #     pretrained_state_dict_image = torch.load(pretrain_file_image)
+    #     pretrained_state_dict_text = torch.load(pretrain_file_text)
+    #     model_state_dict_image = model.module.image_em.state_dict()
+    #     model_state_dict_text = model.module.text_em.state_dict()
 
-    best_model = torch.load(os.path.join(config.OUTPUT_DIR ,config.TEST.MODEL_FILE))
-
-    model.module.load_state_dict(best_model)
+    #     prefix = ''# module.
+    #     new_pretrained_state_dict_image = {}
+    #     for k, v in pretrained_state_dict_image.items():
+    #         if k.replace(prefix, "") in model_state_dict_image and v.shape == model_state_dict_image[k.replace(prefix, "")].shape:     #.replace(prefix, "") .replace(prefix, "")
+    #             new_pretrained_state_dict_image[k.replace(prefix, "")] = v
+    #     new_pretrained_state_dict_text = {}
+    #     for k, v in pretrained_state_dict_text.items():
+    #         if k.replace(prefix, "") in model_state_dict_text and v.shape == model_state_dict_text[k.replace(prefix, "")].shape:     #.replace(prefix, "") .replace(prefix, "")
+    #             new_pretrained_state_dict_text[k.replace(prefix, "")] = v
+    #     model.module.image_em.load_state_dict(new_pretrained_state_dict_image)
+    #     model.module.text_em.load_state_dict(new_pretrained_state_dict_text)
+    #     print('load backbone')
+    #     # print(f'Using backbone {config.NETWORK.PRETRAINED_BACKBONE}')
+    #     # model = load_backbone(model, config.NETWORK.PRETRAINED_BACKBONE) # load POSE ESTIMATION BACKBONE
 
     # if config.TRAIN.RESUME:
     #     start_epoch, model, optimizer, metrics_load = load_checkpoint(model, optimizer, config.OUTPUT_DIR) # TODO: Load the A1 metrics
     #     least_test_loss = metrics_load
 
+    # tb_log_dir = Path(os.path.join(config.OUTPUT_DIR,'tensorboard_log'))
+    # tb_log_dir.mkdir(parents=True, exist_ok=True)
+
+    # writer_dict = {
+    #     'writer': SummaryWriter(log_dir=str(tb_log_dir)),
+    #     'train_global_steps': 0,
+    #     'valid_global_steps': 0,
+    # }
+    best_model = torch.load(os.path.join(config.OUTPUT_DIR ,config.TEST.MODEL_FILE))
+
+    model.module.load_state_dict(best_model)
     
     print('=> EVAL...')
     device=torch.device('cuda')
@@ -167,7 +212,7 @@ def main():
             if test_label[t] == pred_label[0]:
                 acc1 = acc1 + 1
 
-    file_name = 'pred_result/hr_tr_fusing_result.pkl'
+    file_name = 'pred_result/res_tr_fusing_result.pkl'
     with open(file_name, 'wb') as f:
         pickle.dump(results_image , f)
 
@@ -178,7 +223,6 @@ def main():
     print(f"acc1 = {acc_rate1:.4f}")
     print(f"acc5 = {acc_rate5:.4f}")
 
-    
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
