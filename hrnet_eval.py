@@ -163,7 +163,7 @@ def main():
             inner_product = inner_product.reshape(-1)
             _ , index = torch.sort(inner_product)
             # import pdb;pdb.set_trace()
-            index = torch.flip(index,dims=[0]) 
+            index = torch.flip(index,dims=[0]) # feature product
             index_5 = index[:5]
             pred_label = back_label[index_5.cpu()]
             results_image['pre'].append(pred_label)
