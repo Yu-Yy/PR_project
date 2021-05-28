@@ -22,7 +22,7 @@ from lib.models.text_tfheader import TextEncoder
 # from lib.models.Vit_header import VitEncoder
 
 class retrieval_net(nn.Module):
-    def __init__(self,cfg, is_train = True, is_transform=True): #
+    def __init__(self,cfg, is_train = True, is_transform=False): #
         super(retrieval_net,self).__init__()
         # self.backbone = HigherResolutionNet(cfg, is_train=is_train)
         self.is_transform = is_transform
@@ -124,7 +124,7 @@ def main():
     torch.backends.cudnn.deterministic = config.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = config.CUDNN.ENABLED
     print('=> Constructing models ..')
-    model = retrieval_net(config, is_train= True, is_transform=True) #
+    model = retrieval_net(config, is_train= True) #
     with torch.no_grad():
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
     model, optimizer = get_optimizer(model)

@@ -8,8 +8,8 @@ from tqdm import tqdm
 import pickle
 
 #初始化
-image_dir = "../shopee-product-matching/train_images"
-text_path = "../shopee-product-matching/train.csv"           
+image_dir = "shopee-product-matching/train_images"
+text_path = "shopee-product-matching/train.csv"           
 epoch_num = 1   #总样本循环次数
 batch_size = 1  #训练时的一组数据的大小
 

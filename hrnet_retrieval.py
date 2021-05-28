@@ -42,6 +42,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
     parser.add_argument(
         '--cfg', help='experiment configure file name', required=True, type=str)
+    parser.add_argument(
+        '--transform', help='whether using transform', default=False ,type=bool)
     args, rest = parser.parse_known_args()
     update_config(args.cfg) # 把config的文件更新过去
     return args
@@ -113,7 +115,7 @@ def main():
     torch.backends.cudnn.deterministic = config.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = config.CUDNN.ENABLED
     print('=> Constructing models ..')
-    model = retrieval_net(config, is_train= True, is_transform=False)
+    model = retrieval_net(config, is_train= True, is_transform=args.transform)
     with torch.no_grad():
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
     model, optimizer = get_optimizer(model)

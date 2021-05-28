@@ -7,14 +7,21 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pickle
 import sklearn.decomposition as dc
+import argparse
 
-image_dir = "../shopee-product-matching/train_images"
-text_path = "../shopee-product-matching/train.csv"           
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument(
+        '--aug', help='if processing data augmentation or not', required=True, default=False ,type=bool)
+args = parser.parse_args()
+
+image_dir = "shopee-product-matching/train_images" 
+text_path = "shopee-product-matching/train.csv"  
+
 epoch_num = 1   #总样本循环次数
 batch_size = 1  #训练时的一组数据的大小
 
 #读取数据集,并取出10%作为mini数据集 only test the easy mode
-train_dataset = mydataset_PCA(image_dir=image_dir,text_path = text_path, is_train=True)
+train_dataset = mydataset_PCA(image_dir=image_dir,text_path = text_path, is_train=True, is_augmentation=args.aug)
 test_dataset = mydataset_PCA(image_dir=image_dir,text_path = text_path, is_train=False)
 
 feas_train = [] # create the dataset feature base in low dimension
