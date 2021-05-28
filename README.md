@@ -85,10 +85,10 @@ The code for data augmentation is in `utils/data_augmentation.py`, the code for 
 ## Code Block Illustration
 `configs` contains yaml files about the configurations of network running codes.<br>
 `lib` contains the main structured file of network running codes.<br>
-    `lib/config` contains the basic hrnet configurations. <br>
-    `lib/datasets` contains the dataset class of neural networks. <br>
-    `lib/model` contains the model structure of neural networks. <br>
-    `lib/untils` contains the loss functions of neural networks. <br>
+     `lib/config` contains the basic hrnet configurations. <br>
+     `lib/datasets` contains the dataset class of neural networks. <br>
+     `lib/model` contains the model structure of neural networks. <br>
+     `lib/untils` contains the loss functions of neural networks. <br>
 `utils` is about the data preprocess.<br>
 
 ## Running code
