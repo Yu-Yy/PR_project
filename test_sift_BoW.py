@@ -101,6 +101,7 @@ print(f"acc5 = {acc_rate5:.4f}")
 
 
 #visualize
-cm = visualize.cal_confusion_matrix(results_image['pre'],results_image['GT'])
+from  resultAyalyse import cal_confusion_matrix
+cm = cal_confusion_matrix(results_image['pre'],results_image['GT'])
 visualize.plot_confusion_matrix(cm, [], "SIFT BoW Confusion Matrix")
 plt.savefig('./results/figures/SIFT BoW Confusion Matrix.jpg', format='jpg')

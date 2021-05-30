@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 import requests
 import pickle
+from  resultAyalyse import cal_confusion_matrix
 
 
 def drawDistribution():
@@ -52,6 +53,9 @@ def drawDistribution():
         n = label_list.index(label)
         His_test[n] += len(dic_test[label])
 
+    # train1 = dic_train['2518689634']
+    # test1 = dic_test['2518689634']
+    # val1 = dic_val['2518689634']
     #draw distritutionfigsize=(20,6)
     # fig, ax = plt.subplots(ncols=2,nrows=1)
     plt.figure()
@@ -81,29 +85,9 @@ def drawDistribution():
 
 
 
-    
-
-
-
-
-def cal_confusion_matrix(pre_List,GT_list):
-    GT_list = np.array(GT_list)
-    label_list = np.sort(np.unique(GT_list))
-
-    confusion_matrix = np.zeros((len(label_list),len(label_list)))
-
-    for i,label in enumerate(label_list):
-        pre_all = np.array([item[-1] for item in  pre_List])
-        index_list  = np.where(pre_all == label)[0]
-        for index in index_list:
-            j = np.where(label_list == GT_list[index])[0]
-            confusion_matrix[i][j] += 1
-
-    return confusion_matrix
-
-
 
 def plot_confusion_matrix(cm, labels_name, title):
+    plt.figure()
     cm = cm.astype('float') / (cm.sum(axis=1)[:, np.newaxis]+1e-6)    # 归一化
     plt.imshow(cm, interpolation='nearest')    # 在特定的窗口上显示图像
     plt.title(title)    # 图像标题
@@ -116,23 +100,33 @@ def plot_confusion_matrix(cm, labels_name, title):
 
 
 if __name__=='__main__':
-    # cm = [[100,1,0 ,1 ,  6 ,  0 ,  0],
-    # [2 ,111  , 3 ,  0 ,  2 ,  1 , 24],
-    # [  0  , 2 , 68 ,  5  , 4   ,3 ,  2],
-    # [  2  , 0  , 1 ,120 ,  7 , 26 ,  0],
-    # [  2  , 5  , 3 ,  2 ,120  ,11 , 14],
-    # [  2  , 0  , 2  ,12  , 8 ,115  , 1],
-    # [  2  ,25 ,  0  , 1 , 14 ,  4 ,302]]
-    # cm = np.array(cm)
 
-    # result_file = './results/test_SIFT_KNN.pkl'
-    result_file = './results/test_text_pure.pkl'
-    
-    with open(result_file,'rb') as f:
-        results = pickle.load(f)
+    drawDistribution()
 
-    cm = cal_confusion_matrix(results['pre'],results['GT'])
-    plot_confusion_matrix(cm, [], "text pure Confusion Matrix")
-    plt.savefig('./results/figures/text pure Confusion Matrix.jpg', format='jpg')
+    import os
+    filePath = './results'
+    fileList = os.listdir(filePath)
+
+    for t,filename in enumerate(fileList):
+        if not '.pkl' in filename:
+            continue
+
+        result_file = '/'.join([filePath,filename])
+        with open(result_file,'rb') as f:
+            results = pickle.load(f)
+            cm = cal_confusion_matrix(results['pre'],results['GT'])
+
+            figname = filename.replace('.pkl', '')
+            figname = figname.replace('test', '')
+            figname = figname.replace('_', ' ')
+            figname = figname.replace('result', '')+' Confusion Matrix'
+            plot_confusion_matrix(cm, [], figname)
+            plt.savefig('./results/figures/'+figname+'.jpg', format='jpg')
     
-    # drawDistribution()
+
+        
+
+   
+    
+    
+    

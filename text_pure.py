@@ -8,9 +8,10 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pickle
 import sklearn.decomposition as dc
-import visualize 
+import visualize
+from  resultAyalyse import cal_confusion_matrix
 
-is_pca = True
+is_pca = False
 is_nmf = False
 
 image_dir = "../shopee-product-matching/train_images"
@@ -44,18 +45,18 @@ for batch_data in tqdm(train_loader):
     labels_train.append(label)
 
 feas_train = np.concatenate(feas_train,axis=0)
-feas_mean = np.mean(feas_train, axis=0, keepdims=True)
-feas_train = feas_train - feas_mean
+# feas_mean = np.mean(feas_train, axis=0, keepdims=True)
+# feas_train = feas_train - feas_mean
 
 labels_train = np.array(labels_train)
-    
-trainned_base = dc_er.fit_transform(feas_train)
+trainned_base  = feas_train
+# trainned_base = dc_er.fit_transform(feas_train)
 
 # do the test
 test_loader = DataLoader(dataset = test_dataset,batch_size = 1,shuffle = False)
 acc5 = 0
 acc1 = 0
-results_text = {'pre':[],'GT':[]}
+results_image = {'pre':[],'GT':[]}
 for batch_data in tqdm(test_loader):
     text,label = batch_data
     #处理图像数据，提取SIFT特征
@@ -63,25 +64,20 @@ for batch_data in tqdm(test_loader):
     text_test = text.numpy()
     # img_c = img.reshape(1,-1)
     text_test = text_test[0,...]
-    text_test = text_test - feas_mean
-    text_feature = dc_er.transform(text_test)
+    # text_test = text_test - feas_mean
+    # text_feature = dc_er.transform(text_test)
+    text_feature = text_test
     distance_s = np.sum((text_feature - trainned_base) ** 2, axis=-1)
     idx_sort = np.argsort(distance_s)
     idx_top5 = idx_sort[:5]
     pred_label = labels_train[idx_top5]
-    pred_label = np.flipud(pred_label) 
-
+    # pred_label = np.flipud(pred_label) 
+    results_image['pre'].append(pred_label)
+    results_image['GT'].append(label[0])
     if label[0] in pred_label: #TODO: text need to be further index
         acc5 = acc5 + 1
-    if label[0] == pred_label[-1]:
+    if label[0] == pred_label[0]:
         acc1 = acc1 + 1
-    results_text['pre'].append(pred_label)
-    results_text['GT'].append(label[0])
-
-#save results
-savePath = './results/test_text_pure.pkl'
-with open(savePath,'wb') as dfile: #Save dic to loacl
-        pickle.dump(results_text,dfile)
 
 
 #output result
@@ -91,8 +87,12 @@ print('----------------------------')
 
 print(f"acc1 = {acc_rate1:.4f}")
 print(f"acc5 = {acc_rate5:.4f}")
+savePath = './results/test_text_pure.pkl'
+with open(savePath,'wb') as dfile: #Save dic to loacl
+    pickle.dump(results_image,dfile)
+
 
 #save confusion matrix
-cm = visualize.cal_confusion_matrix(results_text['pre'],results_text['GT'])
+cm = cal_confusion_matrix(results_image['pre'],results_image['GT'])
 visualize.plot_confusion_matrix(cm, [], "text pure Confusion Matrix")
 plt.savefig('./results/figures/text pure Confusion Matrix.jpg', format='jpg')

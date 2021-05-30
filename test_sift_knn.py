@@ -81,11 +81,12 @@ for batch_data in tqdm(test_loader):
         # if(len(good_Matches)>Max_Num_matches):
         #     Max_Num_matches = len(good_Matches)
         #     pre_label = y
+    pred_label = np.flipud(pred_label) 
     results_image['pre'].append(pre_label)
     results_image['GT'].append(text[0])
     if text[0] in pre_label: #TODO: text need to be further index
         acc5 = acc5 + 1
-    if text[0] == pre_label[-1]:
+    if text[0] == pre_label[0]:
         acc1 = acc1 + 1
 # err_rate = err/len(test_dataset)
 # acc = 1-err_rate
@@ -103,6 +104,7 @@ with open(savePath,'wb') as dfile: #Save dic to loacl
         pickle.dump(results_image,dfile)
 
 #visualize
-cm = visualize.cal_confusion_matrix(results_image['pre'],results_image['GT'])
+from  resultAyalyse import cal_confusion_matrix
+cm = cal_confusion_matrix(results_image['pre'],results_image['GT'])
 visualize.plot_confusion_matrix(cm, [], "SIFT KNN Confusion Matrix")
 plt.savefig('./results/figures/SIFT KNN Confusion Matrix.jpg', format='jpg')
